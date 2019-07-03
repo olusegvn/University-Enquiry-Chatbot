@@ -9,7 +9,6 @@ app = Flask(__name__)
 
 #search google for answers to suspected user enquiry
 def search_google(query):
-    results = []
     response = requests.get('https://www.google.co.in/search?q=' + query)
     soup = BeautifulSoup(response.text, "lxml")
     results = [item.text for item in soup.find_all('body') if len(item.text) > 50]  # li
@@ -37,6 +36,7 @@ class Chatbot:
                     if process(word) in process(self.gist) and category == Category:
                         results.append(wrd)
         return results
+
     # returns the last concluded course in the course
     def detect_course(self):
 	result = search_bank('course', word_bank)
