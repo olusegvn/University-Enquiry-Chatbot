@@ -12,16 +12,14 @@ def search_google(query):
     response = requests.get('https://www.google.co.in/search?q=' + query)
     soup = BeautifulSoup(response.text, "lxml")
     results = [item.text for item in soup.find_all('body') if len(item.text) > 50]  # li
-    print(results)
     return results
 
 # Create the chatbot
 class Chatbot:
     def __init__(self):
-        self.notes = []
         self.binary_sentence = []
         self.gist = ''
-        self.process = lambda w: [ps.stem(x.lower()) for x in word_tokenize(w)]
+	self.exit_code = 0 # Tells if the bot is ready to exit, after exit, gist is wiped.
         self._model = _model # Bot's main model
         self.course_bank = course_bank # intended for bot's second neural network; aborted for lack of training data
         self.word_bank = word_bank # word bank for bot's main neural network
@@ -85,7 +83,8 @@ class Chatbot:
         # if prediction is an enquiry for course to study
         elif prediction == 3:
             return random.choice(self.responses[3]) + self.suggest_courses()
-	# greetings or ununderstood meassages
+	# greetings or ununderstood meassag
+	
         else:
             return random.choice(self.responses[prediction])
 
@@ -93,12 +92,14 @@ class Chatbot:
 # Main flask app
 @app.route("/", methods=['POST', 'GET'])
 def Chatter():
-    API_endpoint = ''
-    message = request.data()
-    CB = Chatbot()
-    reply = CB.chat(message['data'])
-    requests.post(API_endpoint, data={'reply': reply})
-    return reply
+    while True:
+        API_endpoint = ''
+        message = request.data()
+        CB = Chatbot()
+        reply = CB.chat(message['data'])
+        requests.post(API_endpoint, data={'reply': reply})
+        if CB.exit_code:
+		break
 
 
 if __name__ == '__main__':
